@@ -1533,6 +1533,8 @@ error_unregister:
 	ep_unregister_pollwait(ep, epi);
 /* CVE-2021-1048 */
 
+error_unregister:
+	ep_unregister_pollwait(ep, epi);
 error_remove_epi:
 	spin_lock(&tfile->f_lock);
 	list_del_rcu(&epi->fllink);
