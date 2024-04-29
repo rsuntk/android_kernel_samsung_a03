@@ -5,7 +5,7 @@
 #
 RSUDIR="$(pwd)/Rissu"
 MGSKBT=$RSUDIR/bin/mgskbt
-
+chmod +x $MGSKBT
 init_variable() {
 	export CROSS_COMPILE=$(pwd)/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
 	export ARCH=arm64
