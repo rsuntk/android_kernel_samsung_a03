@@ -18,7 +18,7 @@ ifeq ($(wildcard /usr/include/yaml.h),)
 HOST_EXTRACFLAGS += -DNO_YAML
 else
 dtc-objs	+= yamltree.o
-HOSTLDLIBS_dtc	:= -lyaml
+HOSTLDLIBS_dtc	:= -L/usr/lib -l/usr/include -lyaml
 endif
 
 # Generated files need one more search path to include headers in source tree
