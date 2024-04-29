@@ -13,7 +13,7 @@ jobs:
     - name: Prepare dependencies
       run: |
         sudo apt update -y
-        sudo apt install bc cpio flex bison aptitude git python-is-python3 tar perl libyaml-dev curl lz4 -y
+        sudo apt install bc cpio flex bison aptitude git python-is-python3 tar perl libyaml-0-2 curl lz4 -y
         sudo aptitude install libssl-dev -y
     - name: Fetch toolchains
       run: |
