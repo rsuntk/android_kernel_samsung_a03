@@ -17,8 +17,8 @@ jobs:
         sudo aptitude install libssl-dev -y
     - name: Fetch toolchains
       run: |
-        mkdir toolchains
-        cd toolchains
+        mkdir toolchain
+        cd toolchain
         mkdir -p gcc/linux-x86/aarch64
         cd gcc/linux-x86/aarch64/
         git clone https://gitlab.com/Rissu-Projekt/toolchains/aarch64-linux-android.git aarch64-linux-android-4.9
