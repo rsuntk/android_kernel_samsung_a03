@@ -43,7 +43,7 @@ jobs:
     - name: Build kernel
       id: buildKernel
       run: |
-      	curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
         bash $(pwd)/build_kernel.sh
       working-directory: android_kernel_samsung_a03
     - name: Upload .img
@@ -51,3 +51,4 @@ jobs:
       with:
         name: boot
         path: android_kernel_samsung_a03/Rissu/*.img
+
