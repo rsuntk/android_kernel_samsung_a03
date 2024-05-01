@@ -44,6 +44,7 @@ jobs:
       id: buildKernel
       run: |
         curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+        export ENV_IS_CI=y
         bash $(pwd)/build_kernel.sh
       working-directory: android_kernel_samsung_a03
     - name: Upload .img

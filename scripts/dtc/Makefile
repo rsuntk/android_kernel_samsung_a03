@@ -14,9 +14,11 @@ dtc-objs	+= libfdt/fdt.o libfdt/fdt_ro.o libfdt/fdt_wip.o libfdt/fdt_sw.o \
 # Source files need to get at the userspace version of libfdt_env.h to compile
 HOST_EXTRACFLAGS := -I$(src)/libfdt
 
-ifeq ($(IS_ENV_CI),y)
+ifeq ($(ENV_IS_CI), y)
+$(info -- ENV_IS_CI: true)
 HOST_EXTRACFLAGS += -DNO_YAML
 else
+$(info -- ENV_IS_CI: true)
 dtc-objs	+= yamltree.o
 HOSTLDLIBS_dtc	:= -L/usr/lib -l/usr/include -lyaml
 endif
