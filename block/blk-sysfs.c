@@ -358,6 +358,7 @@ queue_rq_affinity_store(struct request_queue *q, const char *page, size_t count)
 		return ret;
 
 	spin_lock_irq(q->queue_lock);
+#ifdef CONFIG_USE_DEFAULT_BLKSYS_RQ_AFFINITY
 	if (val == 2) {
 		queue_flag_set(QUEUE_FLAG_SAME_COMP, q);
 		queue_flag_set(QUEUE_FLAG_SAME_FORCE, q);
@@ -368,6 +369,10 @@ queue_rq_affinity_store(struct request_queue *q, const char *page, size_t count)
 		queue_flag_clear(QUEUE_FLAG_SAME_COMP, q);
 		queue_flag_clear(QUEUE_FLAG_SAME_FORCE, q);
 	}
+#else   
+	queue_flag_set(QUEUE_FLAG_SAME_COMP, q);
+	queue_flag_set(QUEUE_FLAG_SAME_FORCE, q);
+#endif
 	spin_unlock_irq(q->queue_lock);
 #endif
 	return ret;

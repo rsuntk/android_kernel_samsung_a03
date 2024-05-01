@@ -234,4 +234,8 @@ config BLOCK_SUPPORT_STLOG
 	depends on BLOCK && PROC_STLOG
 	default y
 
+config USE_DEFAULT_BLKSYS_RQ_AFFINITY
+	bool "Enable default RQ_AFFINITY"
+	default n
+
 source block/Kconfig.iosched
