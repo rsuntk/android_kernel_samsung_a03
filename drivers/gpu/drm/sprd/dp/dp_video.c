@@ -632,7 +632,11 @@ void dptx_video_params_reset(struct dptx *dptx)
 	params->aver_bytes_per_tu_frac = 0;
 	params->init_threshold = 15;
 	params->pattern_mode = RAMP;
-	params->refresh_rate = 60000;
+#ifdef CONFIG_RISSU_SPRD_OC
+	params->refresh_rate = 61000; /* 61 Hz */
+#else
+        params->refresh_rate = 60000; /* 60 Hz */
+#endif
 	params->video_format = VCEA;
 }
 
