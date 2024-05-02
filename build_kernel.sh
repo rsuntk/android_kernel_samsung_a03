@@ -5,7 +5,7 @@
 #
 
 #
-# TODO: Tidying up this scripts
+# TODO: Tidy up this scripts
 # TODO: Add support for Local build too.
 #
 
@@ -85,9 +85,9 @@ make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo 
 make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo $LOCALVERSION`\" `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- -j`echo $TC`" > $MK_SC
 
 if [[ $GIT_KSU_STATE = 'true' ]]; then
-	FMT="Scorpio-CI-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`"
+	FMT="Scorpio-CI-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`_`echo $RNDM`"
 else
-	FMT="Scorpio-CI-`echo $RNDM`"
+	FMT="Scorpio-CI-NO_KSU_`echo $RNDM`"
 fi
 
 BOOT_FMT="`echo $FMT`.img"
