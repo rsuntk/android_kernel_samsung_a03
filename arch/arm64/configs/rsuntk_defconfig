@@ -6,13 +6,6 @@
 #
 # Rissu Addons
 #
-CONFIG_KSU=y
-# CONFIG_KSU_DEBUG is not set
-CONFIG_LOCALVERSION="-Scorpio-CI"
-CONFIG_RISSU_KERNEL_PATCHES=y
-CONFIG_RISSU_SYSFS_PATCH=y
-CONFIG_RISSU_SPRD_OC=y
-CONFIG_RISSU_FORCE_LZ4=y
         
 #
 # Automatically generated file; DO NOT EDIT.

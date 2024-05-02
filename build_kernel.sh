@@ -1,25 +1,40 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 #
-# Temp build script
+# Rissu Projects (C) 2024
 #
+
+#
+# TODO: Tidying up this scripts
+# TODO: Add support for Local build too.
+#
+
+# declare static variable
 RSUDIR="$(pwd)/Rissu"
-MGSKBT=$RSUDIR/bin/mgskbt
-chmod +x $MGSKBT
-init_variable() {
-	export CROSS_COMPILE=$(pwd)/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
-	export ARCH=arm64
-	export CLANG_TOOL_PATH=$(pwd)/toolchain/clang/host/linux-x86/clang-r383902/bin/
-	export PATH=${CLANG_TOOL_PATH}:${PATH//"${CLANG_TOOL_PATH}:"}
-	export BSP_BUILD_FAMILY=qogirl6
-	export DTC_OVERLAY_TEST_EXT=$(pwd)/tools/mkdtimg/ufdt_apply_overlay
-	export DTC_OVERLAY_VTS_EXT=$(pwd)/tools/mkdtimg/ufdt_verify_overlay_host
-	export BSP_BUILD_ANDROID_OS=y
-}
-init_variable;
+RNDM=$($RSUDIR/bin/rndm)
 PROC=$(nproc --all);
 MIN_CORES="2"
 MK_SC="mk_cmd.sh"
+MGSKBT=$RSUDIR/bin/mgskbt
+OUTDIR="$(pwd)/out"
+DEFCONFIG="rsuntk_defconfig"
+TMP_DEFCONFIG="tmprsu_defconfig"
+
+# declare global variable
+export CROSS_COMPILE=$(pwd)/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
+export ARCH=arm64
+export CLANG_TOOL_PATH=$(pwd)/toolchain/clang/host/linux-x86/clang-r383902/bin/
+export PATH=${CLANG_TOOL_PATH}:${PATH//"${CLANG_TOOL_PATH}:"}
+export BSP_BUILD_FAMILY=qogirl6
+export DTC_OVERLAY_TEST_EXT=$(pwd)/tools/mkdtimg/ufdt_apply_overlay
+export DTC_OVERLAY_VTS_EXT=$(pwd)/tools/mkdtimg/ufdt_verify_overlay_host
+export BSP_BUILD_ANDROID_OS=y
+
+# giving magiskboot and rndm
+chmod +x $MGSKBT && chmod +x $RNDM
+
+# copy rsuntk_defconfig
+cat $OUTDIR/arch/$ARCH/configs/$DEFCONFIG > $OUTDIR/arch/$ARCH/configs/$TMP_DEFCONFIG
 
 if [ $PROC -lt $MIN_CORES ]; then
 	TC="1"
@@ -29,9 +44,57 @@ else
 	TC=$MIN_CORES
 fi
 
+if [ ! -z $GIT_LOCALVERSION ]; then
+	LOCALVERSION="`echo $GIT_LOCALVERSION`_`echo $RNDM`"
+else
+	LOCALVERSION="`echo Scorpio-CI_$RNDM`"
+fi
+
+rissu_configs() {
+	printf "\nCONFIG_RISSU_KERNEL_PATCHES=y\nCONFIG_RISSU_SYSFS_PATCH=y\nCONFIG_RISSU_SPRD_OC=y\nCONFIG_RISSU_FORCE_LZ4=y\n" > $TMP_DEFCONFIG
+}
+
+if [[ $GIT_KSU_STATE = 'true' ]]; then
+	if [ ! -d $(pwd)/KernelSU ]; then
+		if [[ $GIT_KSU_BRANCH = 'dev' ]]; then
+			curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
+		elif [[ $GIT_KSU_BRANCH = 'stable' ]]; then
+			curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+		fi
+	fi
+	
+	KSU_COMMIT_COUNT=$(cd KernelSU && git rev-list --count HEAD)
+	KSU_VERSION_NUMBER=$(expr 10200 + $KSU_COMMIT_COUNT)
+	KSU_VERSION_TAGS=$(cd KernelSU && git describe --tags)
+	FLAGS="CONFIG_KSU=y"
+else
+	if [ -d $(pwd)/KernelSU ]; then
+		rm $(pwd)/KernelSU
+		# https://github.com/tiann/KernelSU/blob/main/kernel/setup.sh#L29
+		echo "[+] Cleaning up..."
+	    	[ -L "$(pwd)/drivers/kernelsu" ] && rm "$(pwd)/drivers/kernelsu" && echo "[-] Symlink removed."
+	    	grep -q "kernelsu" "$(pwd)/drivers/Makefile" && sed -i '/kernelsu/d' "$(pwd)/drivers/Makefile" && echo "[-] Makefile reverted."
+	    	grep -q "drivers/kernelsu/Kconfig" "$(pwd)/drivers/Kconfig" && sed -i '/drivers\/kernelsu\/Kconfig/d' "$(pwd)/drivers/Kconfig" && echo "[-] Kconfig reverted."
+	fi
+fi
+
+if [[ $GIT_RISSU_DEBUGS = 'true' ]]; then
+	rissu_configs;
+fi
+
 printf "#! /usr/bin/env bash
-make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- rsuntk_defconfig
-make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- -j`echo $TC`" > $MK_SC
+make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo $LOCALVERSION`\" `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- tmprsu_defconfig
+make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo $LOCALVERSION`\" `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- -j`echo $TC`" > $MK_SC
+
+if [[ $GIT_KSU_STATE = 'true' ]]; then
+	FMT="Scorpio-CI-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`"
+else
+	FMT="Scorpio-CI-`echo $RNDM`"
+fi
+
+BOOT_FMT="`echo $FMT`.img"
+
+echo $FMT > $(pwd)/tmp_gitout_name.txt
 
 mk_bootimg() {
 	cd $RSUDIR
@@ -39,7 +102,7 @@ mk_bootimg() {
 	$MGSKBT unpack boot.img
 	rm $RSUDIR/kernel -f
 	cp ../out/arch/arm64/boot/Image $RSUDIR/kernel
-	$MGSKBT repack boot.img Scorpio-CI-`echo $RANDOM`
+	$MGSKBT repack boot.img $BOOT_FMT
 	rm $RSUDIR/kernel && rm $RSUDIR/ramdisk.cpio && rm $RSUDIR/dtb
 }
 

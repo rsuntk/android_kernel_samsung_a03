@@ -1,7 +1,25 @@
 name: Build Kernel
 on:
   workflow_dispatch:
-        
+    inputs:
+      INPUT_LOCALVERSION:
+        description: 'Describe localversion for kernel'
+        required: false
+      INPUT_KSU_BRANCH:
+        description: 'KernelSU branch [ignore if no KSU]'
+        required: true
+        default: stable
+        type: choice
+        options:
+        - stable
+        - dev
+      INPUT_KSU_STATE:
+        description: 'KernelSU support'
+        type: boolean
+      INPUT_RISSU_DEBUG:
+        description: 'Rissu debug and patches support'
+        type: boolean
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,7 +31,7 @@ jobs:
     - name: Prepare dependencies
       run: |
         sudo apt update -y
-        sudo apt install bc cpio flex bison aptitude git python-is-python3 tar perl libyaml-0-2 curl lz4 -y
+        sudo apt install bc cpio flex bison aptitude git python-is-python3 tar perl curl lz4 -y
         sudo aptitude install libssl-dev -y
     - name: Fetch toolchains
       run: |
@@ -43,13 +61,21 @@ jobs:
     - name: Build kernel
       id: buildKernel
       run: |
-        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
-        export ENV_IS_CI=y
+        export GIT_LOCALVERSION=$PRE_INPUT_LOCALVERSION
+        export GIT_KSU_BRANCH=$PRE_INPUT_KSU_BRANCH
+        export GIT_KSU_STATE=$PRE_INPUT_KSU_STATE
+        export GIT_RISSU_DEBUGS=$PRE_INPUT_RISSU_DEBUG
         bash $(pwd)/build_kernel.sh
+        imgName=`cat $(pwd)/tmp_gitout_name.txt` && echo "imgName=$imgName" >> $GITHUB_OUTPUT
       working-directory: android_kernel_samsung_a03
+      env:
+        PRE_INPUT_LOCALVERSION: ${{ github.event.inputs.INPUT_LOCALVERSION }}
+        PRE_INPUT_KSU_BRANCH: ${{ github.event.inputs.INPUT_KSU_BRANCH }}
+        PRE_INPUT_KSU_STATE: ${{ github.event.inputs.INPUT_KSU_STATE }}
+        PRE_INPUT_RISSU_DEBUG: ${{ github.event.inputs.INPUT_RISSU_DEBUG }}
+        
     - name: Upload .img
       uses: actions/upload-artifact@v4
       with:
-        name: boot
+        name: ${{ steps.buildKernel.outputs.imgName }}
         path: android_kernel_samsung_a03/Rissu/*.img
-
