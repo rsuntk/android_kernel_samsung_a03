@@ -77,12 +77,12 @@ fi
 
 if [[ $GIT_RISSU_DEBUGS = 'true' ]]; then
 	echo "- Rissu Debug enabled"
-	FLAGS_TWO="CONFIG_RISSU_KERNEL_PATCHES=y CONFIG_RISSU_SYSFS_PATCH=y CONFIG_RISSU_SPRD_OC=y CONFIG_RISSU_FORCE_LZ4=y"
+	FLAGS+=" CONFIG_RISSU_KERNEL_PATCHES=y CONFIG_RISSU_SYSFS_PATCH=y CONFIG_RISSU_SPRD_OC=y CONFIG_RISSU_FORCE_LZ4=y"
 fi
 
 printf "#! /usr/bin/env bash
-make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo $LOCALVERSION`\" `echo $FLAGS` `echo $FLAGS_TWO` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- tmprsu_defconfig
-make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo $LOCALVERSION`\" `echo $FLAGS` `echo $FLAGS_TWO` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- -j`echo $TC`" > $MK_SC
+make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo $LOCALVERSION`\" `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- tmprsu_defconfig
+make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo $LOCALVERSION`\" `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- -j`echo $TC`" > $MK_SC
 
 if [[ $GIT_KSU_STATE = 'true' ]]; then
 	FMT="Scorpio-CI-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`"
