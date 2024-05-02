@@ -2,7 +2,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
-#define pr_fmt(fmt) "Rissu: " fmt
+#include "rissu.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("rsuntk");
