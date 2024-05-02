@@ -11,7 +11,8 @@
 
 # declare static variable
 RSUDIR="$(pwd)/Rissu"
-RNDM=$($RSUDIR/bin/rndm)
+RNDM_BIN=$RSUDIR/bin/rndm
+RNDM=$($RNDM_BIN)
 PROC=$(nproc --all);
 MIN_CORES="2"
 MK_SC="mk_cmd.sh"
@@ -31,10 +32,10 @@ export DTC_OVERLAY_VTS_EXT=$(pwd)/tools/mkdtimg/ufdt_verify_overlay_host
 export BSP_BUILD_ANDROID_OS=y
 
 # giving magiskboot and rndm
-chmod +x $MGSKBT && chmod +x $RNDM
+chmod +x $MGSKBT && chmod +x $RNDM_BIN
 
 # copy rsuntk_defconfig
-cat $OUTDIR/arch/$ARCH/configs/$DEFCONFIG > $OUTDIR/arch/$ARCH/configs/$TMP_DEFCONFIG
+cat arch/$ARCH/configs/$DEFCONFIG > arch/$ARCH/configs/$TMP_DEFCONFIG
 
 if [ $PROC -lt $MIN_CORES ]; then
 	TC="1"
