@@ -7,6 +7,8 @@
 #
 # TODO: Tidy up this scripts
 # TODO: Add support for Local build too.
+# I guess this is not possible on Local build. since half
+# of it handled by CI.
 #
 
 # declare static variable
@@ -47,8 +49,10 @@ fi
 
 if [ ! -z $GIT_LOCALVERSION ]; then
 	LOCALVERSION="`echo $GIT_LOCALVERSION`_`echo $RNDM`"
+	LTR="`echo $GIT_LOCALVERSION`"
 else
-	LOCALVERSION="`echo Scorpio-CI_$RNDM`"
+	LOCALVERSION="Scorpio-CI"
+	LTR="$LOCALVERSION"
 fi
 
 if [[ $GIT_KSU_STATE = 'true' ]]; then
@@ -85,16 +89,16 @@ make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo 
 make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo $LOCALVERSION`\" `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- -j`echo $TC`" > $MK_SC
 
 if [[ $GIT_KSU_STATE = 'true' ]]; then
-	FMT="Scorpio-CI-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`_`echo $RNDM`"
+	FMT="`echo $LTR`-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`_`echo $RNDM`"
 else
-	FMT="Scorpio-CI-NO_KSU_`echo $RNDM`"
+	FMT="`echo $LTR`-NO_KSU_`echo $RNDM`"
 fi
 
 BOOT_FMT="`echo $FMT`.img"
 
 echo $FMT > $(pwd)/tmp_gitout_name.txt
 
-mk_bootimg() {
+mk_bootimg() { ## Stolen and simplified from rsuntk_v4.19.150 :D
 	cd $RSUDIR
 	tar -xvf a03_s6.tar.xz
 	$MGSKBT unpack boot.img
