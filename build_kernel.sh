@@ -51,10 +51,6 @@ else
 	LOCALVERSION="`echo Scorpio-CI_$RNDM`"
 fi
 
-rissu_configs() {
-	printf "\nCONFIG_RISSU_KERNEL_PATCHES=y\nCONFIG_RISSU_SYSFS_PATCH=y\nCONFIG_RISSU_SPRD_OC=y\nCONFIG_RISSU_FORCE_LZ4=y\n" > $TMP_DEFCONFIG
-}
-
 if [[ $GIT_KSU_STATE = 'true' ]]; then
 	if [ ! -d $(pwd)/KernelSU ]; then
 		if [[ $GIT_KSU_BRANCH = 'dev' ]]; then
@@ -80,12 +76,13 @@ else
 fi
 
 if [[ $GIT_RISSU_DEBUGS = 'true' ]]; then
-	rissu_configs;
+	echo "- Rissu Debug enabled"
+	FLAGS_TWO="CONFIG_RISSU_KERNEL_PATCHES=y CONFIG_RISSU_SYSFS_PATCH=y CONFIG_RISSU_SPRD_OC=y CONFIG_RISSU_FORCE_LZ4=y"
 fi
 
 printf "#! /usr/bin/env bash
-make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo $LOCALVERSION`\" `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- tmprsu_defconfig
-make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo $LOCALVERSION`\" `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- -j`echo $TC`" > $MK_SC
+make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo $LOCALVERSION`\" `echo $FLAGS` `echo $FLAGS_TWO` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- tmprsu_defconfig
+make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y CONFIG_LOCALVERSION=\"-`echo $LOCALVERSION`\" `echo $FLAGS` `echo $FLAGS_TWO` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- -j`echo $TC`" > $MK_SC
 
 if [[ $GIT_KSU_STATE = 'true' ]]; then
 	FMT="Scorpio-CI-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`"
@@ -104,7 +101,7 @@ mk_bootimg() {
 	rm $RSUDIR/kernel -f
 	cp ../out/arch/arm64/boot/Image $RSUDIR/kernel
 	$MGSKBT repack boot.img $BOOT_FMT
-	rm $RSUDIR/kernel && rm $RSUDIR/ramdisk.cpio && rm $RSUDIR/dtb
+	rm $RSUDIR/kernel && rm $RSUDIR/ramdisk.cpio && rm $RSUDIR/dtb && rm $RSUDIR/boot.img
 }
 
 if [ -f $MK_SC ]; then
