@@ -107,7 +107,23 @@ mk_bootimg() { ## Stolen and simplified from rsuntk_v4.19.150 :D
 	$MGSKBT repack boot.img $BOOT_FMT
 	rm $RSUDIR/kernel && rm $RSUDIR/ramdisk.cpio && rm $RSUDIR/dtb && rm $RSUDIR/boot.img
 }
-
+upload_to_tg() {
+	# Thanks to ItzKaguya, for references.
+	cd $RSUPATH
+	FILE_NAME="$BOOT_FMT"
+	GIT_REPO_HASH=$(cd .. && git rev-parse --short HEAD)
+	GIT_REPO_COMMIT_COUNT=$(cd .. && git rev-list --count HEAD)
+	if [[ $ENV_IS_CI != 'true' ]]; then
+		TG_BOT_TOKEN=$(cat bot.token)
+	fi
+	if [ ! -z $TG_BOT_TOKEN ]; then	
+		LINUX_VERSION=$(cd .. && make kernelversion)
+		file_description="`printf "Scorpio-CI build\nLinux Version: $LINUX_VERSION\nAndroid: $ANDROID_MAJOR_VERSION/$PLATFORM_VERSION\nKSU: $KSU_HARDCODE_STRINGS\nDevice: a03\n\nCI: $GIT_REPO_COMMIT_COUNT`echo th`\nCommit Hash: $GIT_REPO_HASH\n\n*NOTE: Untested, make sure you have a backup kernel before flashing* [Source code](https://github.com/rsuntk/a03)"`"
+		curl -s -F "chat_id=-`echo $TG_CHAT_ID`" -F "document=@$FILE_NAME" -F parse_mode='Markdown' -F "caption=$file_description" "https://api.telegram.org/bot$TG_BOT_TOKEN/sendDocument"
+	else
+		echo "! Telegram bot token empty. Abort kernel uploading";
+	fi
+}
 if [ -f $MK_SC ]; then
 	bash $MK_SC
 	rm $MK_SC
@@ -119,6 +135,9 @@ if [ -f $MK_SC ]; then
 	fi
 	
 	if [[ $BUILD_STATE = '0' ]]; then
+		if [[ $TG_UPLOAD = 'true' ]]; then
+			upload_to_tg;
+		fi
 		mk_bootimg;
 	else
 		echo "Build failed, with $BUILD_STATE code."

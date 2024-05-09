@@ -19,10 +19,14 @@ on:
       INPUT_RISSU_DEBUG:
         description: 'Rissu debug and patches support'
         type: boolean
+      INPUT_UPLOAD_TO_TG:
+        description: 'Upload to Telegram'
+        type: boolean
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: TG
     steps:
     - uses: actions/checkout@v4
       with:
@@ -65,6 +69,9 @@ jobs:
         export GIT_KSU_BRANCH=$PRE_INPUT_KSU_BRANCH
         export GIT_KSU_STATE=$PRE_INPUT_KSU_STATE
         export GIT_RISSU_DEBUGS=$PRE_INPUT_RISSU_DEBUG
+        export TG_BOT_TOKEN=$PRE_BOT_TOKEN
+        export TG_CHAT_ID=$PRE_CHAT_ID
+        export TG_UPLOAD=$PRE_INPUT_UPLOAD_TO_TG
         bash $(pwd)/build_kernel.sh
         imgName=`cat $(pwd)/tmp_gitout_name.txt` && echo "imgName=$imgName" >> $GITHUB_OUTPUT
       working-directory: android_kernel_samsung_a03
@@ -73,9 +80,13 @@ jobs:
         PRE_INPUT_KSU_BRANCH: ${{ github.event.inputs.INPUT_KSU_BRANCH }}
         PRE_INPUT_KSU_STATE: ${{ github.event.inputs.INPUT_KSU_STATE }}
         PRE_INPUT_RISSU_DEBUG: ${{ github.event.inputs.INPUT_RISSU_DEBUG }}
+        PRE_INPUT_UPLOAD_TO_TG: ${{ github.event.inputs.INPUT_UPLOAD_TO_TG }}
+        PRE_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        PRE_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         
     - name: Upload .img
       uses: actions/upload-artifact@v4
       with:
         name: ${{ steps.buildKernel.outputs.imgName }}
         path: android_kernel_samsung_a03/Rissu/*.img
+
