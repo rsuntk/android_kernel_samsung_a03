@@ -115,7 +115,7 @@ upload_to_tg() {
 	GIT_REPO_COMMIT_COUNT=$(cd .. && git rev-list --count HEAD)
 	if [ ! -z $TG_BOT_TOKEN ]; then	
 		LINUX_VERSION=$(cd .. && make kernelversion)
-		file_description="`printf "Scorpio-CI build\nLinux Version: $LINUX_VERSION\nAndroid: $ANDROID_MAJOR_VERSION/$PLATFORM_VERSION\nKSU: $KSU_HARDCODE_STRINGS\nDevice: a03\n\nCI: $GIT_REPO_COMMIT_COUNT\nCommit Hash: $GIT_REPO_HASH\n\n*NOTE: Untested, make sure you have a backup kernel before flashing*"`"
+		file_description="`printf "Scorpio-CI build\nLinux Version: $LINUX_VERSION\nAndroid: $ANDROID_MAJOR_VERSION/$PLATFORM_VERSION\nKSU: $KSU_VERSION_NUMBER\nDevice: a03\n\nCI: $GIT_REPO_COMMIT_COUNT\nCommit Hash: $GIT_REPO_HASH\n\n*NOTE: Untested, make sure you have a backup kernel before flashing*"`"
 		curl -s -F "chat_id=-`echo $TG_CHAT_ID`" -F "document=@$FILE_NAME" -F parse_mode='Markdown' -F "caption=$file_description" "https://api.telegram.org/bot$TG_BOT_TOKEN/sendDocument"
 	else
 		echo "! Telegram bot token empty. Abort kernel uploading";
