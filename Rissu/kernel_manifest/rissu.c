@@ -30,15 +30,21 @@ static void check_rissu_patches(void)
     pr_info("set rq_affinity flags to 2");
 #endif
 
-#ifdef CONFIG_RISSU_SPRD_OC
-    pr_info("CONFIG_RISSU_SPRD_OC: true!");
-    pr_info("gpu: set hz to 61000 kHz! idk is this right.");
-    pr_info("cpu: unisoc overclocking is not possible. for now.");
-#endif
+
 
 #ifdef CONFIG_RISSU_FORCE_LZ4
     pr_info("CONFIG_RISSU_FORCE_LZ4: true!");
     pr_info("zram: force lz4 for zram compression.");
+#endif
+
+#ifdef CONFIG_ARCH_SPRD // for now, i only add unisoc chipset
+
+#ifdef CONFIG_RISSU_SPRD_OC
+      pr_info("CONFIG_RISSU_SPRD_OC: true!");
+      pr_info("gpu: set hz to 61000 kHz! idk is this right.");
+      pr_info("cpu: unisoc overclocking is not possible. for now.");
+#endif
+  
 #endif
 }
 static int __init rissu_init(void)
