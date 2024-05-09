@@ -48,7 +48,6 @@ jobs:
         export GIT_KSU_STATE=$PRE_INPUT_KSU_STATE
         export GIT_RISSU_DEBUGS=$PRE_INPUT_RISSU_DEBUG
         bash $(pwd)/build_kernel.sh
-        imgName=`cat $(pwd)/tmp_gitout_name.txt` && echo "imgName=$imgName" >> $GITHUB_OUTPUT
       working-directory: android_kernel_samsung_a03
       env:
         PRE_INPUT_LOCALVERSION: ${{ github.event.inputs.INPUT_LOCALVERSION }}
@@ -59,5 +58,5 @@ jobs:
     - name: Upload .img
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ steps.buildKernel.outputs.imgName }}
-        path: android_kernel_samsung_a03/Rissu/*.img
+        name: Image.gz
+        path: android_kernel_samsung_a03/out/arch/arm64/boot/*.gz
