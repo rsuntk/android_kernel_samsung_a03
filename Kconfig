@@ -12,6 +12,3 @@ config SRCARCH
 source "arch/$SRCARCH/Kconfig"
 
 source "test/Kconfig"
-
-# include rissu's kernel module
-source "Rissu/kernel_manifest/Kconfig"
