@@ -113,9 +113,6 @@ upload_to_tg() {
 	FILE_NAME="$BOOT_FMT"
 	GIT_REPO_HASH=$(cd .. && git rev-parse --short HEAD)
 	GIT_REPO_COMMIT_COUNT=$(cd .. && git rev-list --count HEAD)
-	if [[ $ENV_IS_CI != 'true' ]]; then
-		TG_BOT_TOKEN=$(cat bot.token)
-	fi
 	if [ ! -z $TG_BOT_TOKEN ]; then	
 		LINUX_VERSION=$(cd .. && make kernelversion)
 		file_description="`printf "Scorpio-CI build\nLinux Version: $LINUX_VERSION\nAndroid: $ANDROID_MAJOR_VERSION/$PLATFORM_VERSION\nKSU: $KSU_HARDCODE_STRINGS\nDevice: a03\n\nCI: $GIT_REPO_COMMIT_COUNT`echo th`\nCommit Hash: $GIT_REPO_HASH\n\n*NOTE: Untested, make sure you have a backup kernel before flashing*\n[Source code](https://github.com/rsuntk/a03)"`"
@@ -135,10 +132,10 @@ if [ -f $MK_SC ]; then
 	fi
 	
 	if [[ $BUILD_STATE = '0' ]]; then
+		mk_bootimg;
 		if [[ $TG_UPLOAD = 'true' ]]; then
 			upload_to_tg;
 		fi
-		mk_bootimg;
 	else
 		echo "Build failed, with $BUILD_STATE code."
 		exit 1;
