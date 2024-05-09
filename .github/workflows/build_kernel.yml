@@ -1,24 +1,6 @@
 name: Build Kernel
 on:
   workflow_dispatch:
-    inputs:
-      INPUT_LOCALVERSION:
-        description: 'Describe localversion for kernel'
-        required: false
-      INPUT_KSU_BRANCH:
-        description: 'KernelSU branch [ignore if no KSU]'
-        required: true
-        default: stable
-        type: choice
-        options:
-        - stable
-        - dev
-      INPUT_KSU_STATE:
-        description: 'KernelSU support'
-        type: boolean
-      INPUT_RISSU_DEBUG:
-        description: 'Rissu debug and patches support'
-        type: boolean
 
 jobs:
   build:
