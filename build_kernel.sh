@@ -90,7 +90,7 @@ else
 fi
 
 BOOT_FMT="`echo $FMT`.img"
-TAR_XZ_FMT="`echo $BOOT_FMT`.tar.xz"
+LZ4_FMT="`echo $BOOT_FMT`.lz4"
 
 echo $FMT > $(pwd)/tmp_gitout_name.txt
 
@@ -101,7 +101,7 @@ mk_bootimg() { ## Stolen and simplified from rsuntk_v4.19.150 :D
 	rm $RSUDIR/kernel -f
 	cp ../out/arch/arm64/boot/Image $RSUDIR/kernel
 	$MGSKBT repack boot.img $BOOT_FMT
-	tar -cJf - $BOOT_FMT | xz -9e -c - > $TAR_XZ_FMT
+	lz4 -B6 --content-size $BOOT_FMT $LZ4_FMT
 	rm $RSUDIR/kernel && rm $RSUDIR/ramdisk.cpio && rm $RSUDIR/dtb && rm $RSUDIR/boot.img
 }
 upload_to_tg() {
@@ -125,7 +125,7 @@ Scorpio CI-Kernel
 - Untested, make sure to backup working boot.img before flash!
 
 *How to flash:*
-1. Unpack .tar.xz archive,
+1. Unpack .lz4 archive,
 2. Reboot to TWRP,
 3. Select install, click Install Image,
 4. Flash this to boot partition,
