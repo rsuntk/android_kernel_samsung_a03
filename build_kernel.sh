@@ -107,7 +107,7 @@ mk_bootimg() { ## Stolen and simplified from rsuntk_v4.19.150 :D
 upload_to_tg() {
 	# Thanks to ItzKaguya, for references.
 	cd $RSUDIR
-	FILE_NAME="$TAR_XZ_FMT"
+	FILE_NAME="$LZ4_FMT"
 	GIT_REPO_HASH=$(cd .. && git rev-parse --short HEAD)
 	GIT_COMMIT_MSG=$(cd .. && git rev-list --max-count=1 --no-commit-header --format=%B HEAD)
 	GIT_REPO_COMMIT_COUNT=$(cd .. && git rev-list --count HEAD)
