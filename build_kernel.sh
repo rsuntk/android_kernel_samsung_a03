@@ -114,6 +114,7 @@ upload_to_tg() {
 	cd $RSUDIR
 	FILE_NAME="$TAR_XZ_FMT"
 	GIT_REPO_HASH=$(cd .. && git rev-parse --short HEAD)
+	GIT_COMMIT_MSG=$(cd .. && git rev-list --max-count=1 --no-commit-header --format=%B HEAD)
 	GIT_REPO_COMMIT_COUNT=$(cd .. && git rev-list --count HEAD)
 	release_text=$(cat <<EOF
 Scorpio CI-Kernel
@@ -121,7 +122,7 @@ Scorpio CI-Kernel
 
 *Build Date:* `date`
 
-\`\`\`sh
+\`\`\`
 `echo $GIT_COMMIT_MSG`
 \`\`\`
 
