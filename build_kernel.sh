@@ -95,6 +95,7 @@ else
 fi
 
 BOOT_FMT="`echo $FMT`.img"
+TAR_XZ_FMT="`echo $BOOT_FMT`.tar.xz"
 
 echo $FMT > $(pwd)/tmp_gitout_name.txt
 
@@ -105,17 +106,18 @@ mk_bootimg() { ## Stolen and simplified from rsuntk_v4.19.150 :D
 	rm $RSUDIR/kernel -f
 	cp ../out/arch/arm64/boot/Image $RSUDIR/kernel
 	$MGSKBT repack boot.img $BOOT_FMT
+	tar -cJf - $BOOT_FMT | xz -9e -c - > $TAR_XZ_FMT
 	rm $RSUDIR/kernel && rm $RSUDIR/ramdisk.cpio && rm $RSUDIR/dtb && rm $RSUDIR/boot.img
 }
 upload_to_tg() {
 	# Thanks to ItzKaguya, for references.
 	cd $RSUDIR
-	FILE_NAME="$BOOT_FMT"
+	FILE_NAME="$TAR_XZ_FMT"
 	GIT_REPO_HASH=$(cd .. && git rev-parse --short HEAD)
 	GIT_REPO_COMMIT_COUNT=$(cd .. && git rev-list --count HEAD)
 	if [ ! -z $TG_BOT_TOKEN ]; then	
 		LINUX_VERSION=$(cd .. && make kernelversion)
-		file_description="`printf "Scorpio-CI build\nLinux Version: $LINUX_VERSION\nAndroid: $ANDROID_MAJOR_VERSION/$PLATFORM_VERSION\nKSU: $KSU_VERSION_NUMBER\nDevice: a03\n\nCI: $GIT_REPO_COMMIT_COUNT\nCommit Hash: $GIT_REPO_HASH\n\n*NOTE: Untested, make sure you have a backup kernel before flashing*"`"
+		file_description="`printf "Scorpio-CI build\nLinux Version: $LINUX_VERSION\nAndroid: $ANDROID_MAJOR_VERSION/$PLATFORM_VERSION\nKSU: $KSU_VERSION_NUMBER\nDevice: a03\n\nCI: $GIT_REPO_COMMIT_COUNT\nCommit Hash: $GIT_REPO_HASH\n\n*NOTE: Untested, make sure you have a backup kernel before flashing. Unpack tar.xz file first before flashing!*"`"
 		curl -s -F "chat_id=-`echo $TG_CHAT_ID`" -F "document=@$FILE_NAME" -F parse_mode='Markdown' -F "caption=$file_description" "https://api.telegram.org/bot$TG_BOT_TOKEN/sendDocument"
 	else
 		echo "! Telegram bot token empty. Abort kernel uploading";
