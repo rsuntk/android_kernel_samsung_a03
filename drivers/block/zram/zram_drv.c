@@ -53,11 +53,8 @@ static DEFINE_MUTEX(zram_index_mutex);
 
 static int zram_major;
 
-#ifdef CONFIG_RISSU_FORCE_LZ4
 static const char *default_compressor = "lz4";
-#else
-static const char *default_compressor = "lzo-rle";
-#endif
+//static const char *default_compressor = "lzo-rle";
 
 static bool is_lzorle;
 static unsigned char lzo_marker[4] = {0x11, 0x00, 0x00};

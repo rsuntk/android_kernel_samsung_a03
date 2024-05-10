@@ -16,9 +16,6 @@ on:
       INPUT_KSU_STATE:
         description: 'KernelSU support'
         type: boolean
-      INPUT_RISSU_DEBUG:
-        description: 'Rissu debug and patches support'
-        type: boolean
       INPUT_UPLOAD_TO_TG:
         description: 'Upload to Telegram'
         type: boolean
@@ -68,12 +65,10 @@ jobs:
         export GIT_LOCALVERSION=$PRE_INPUT_LOCALVERSION
         export GIT_KSU_BRANCH=$PRE_INPUT_KSU_BRANCH
         export GIT_KSU_STATE=$PRE_INPUT_KSU_STATE
-        export GIT_RISSU_DEBUGS=$PRE_INPUT_RISSU_DEBUG
 
         export GIT_REPO=$PRE_GITHUB_REPOSITORY
         export GIT_SHA=$PRE_GITHUB_SHA
         export GIT_SERVER_URL=$PRE_GITHUB_URL
-        export GIT_COMMIT_MSG=$PRE_GITHUB_COMMIT_MSG
         
         export TG_BOT_TOKEN=$PRE_BOT_TOKEN
         export TG_CHAT_ID=$PRE_CHAT_ID
@@ -85,14 +80,12 @@ jobs:
         PRE_INPUT_LOCALVERSION: ${{ github.event.inputs.INPUT_LOCALVERSION }}
         PRE_INPUT_KSU_BRANCH: ${{ github.event.inputs.INPUT_KSU_BRANCH }}
         PRE_INPUT_KSU_STATE: ${{ github.event.inputs.INPUT_KSU_STATE }}
-        PRE_INPUT_RISSU_DEBUG: ${{ github.event.inputs.INPUT_RISSU_DEBUG }}
         PRE_INPUT_UPLOAD_TO_TG: ${{ github.event.inputs.INPUT_UPLOAD_TO_TG }}
         PRE_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         PRE_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         PRE_GITHUB_REPOSITORY: ${{ github.repository }}
         PRE_GITHUB_SHA: ${{ github.sha }}
         PRE_GITHUB_URL: ${{ github.url }}
-        PRE_GITHUB_COMMIT_MSG: ${{ github.event.head_commit.message }}
         
     - name: Upload .img
       uses: actions/upload-artifact@v4

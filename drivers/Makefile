@@ -194,5 +194,3 @@ obj-y   += samsung/
 # Tab A8 code for SR-AX6300-01-5 by wenyaqi at 20210824 start
 obj-$(CONFIG_AFC)		+= afc/
 # Tab A8 code for SR-AX6300-01-5 by wenyaqi at 20210824 end
-
-obj-$(CONFIG_RISSU_KERNEL_PATCHES) += ../Rissu/kernel_manifest/

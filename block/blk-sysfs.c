@@ -359,10 +359,6 @@ queue_rq_affinity_store(struct request_queue *q, const char *page, size_t count)
 
 	spin_lock_irq(q->queue_lock);
 
-#ifdef CONFIG_RISSU_SYSFS_PATCH /* force rq_affinity flags to 2 */
-	queue_flag_set(QUEUE_FLAG_SAME_COMP, q);
-	queue_flag_set(QUEUE_FLAG_SAME_FORCE, q);
-#else
 	if (val == 2) {
 		queue_flag_set(QUEUE_FLAG_SAME_COMP, q);
 		queue_flag_set(QUEUE_FLAG_SAME_FORCE, q);
@@ -373,7 +369,6 @@ queue_rq_affinity_store(struct request_queue *q, const char *page, size_t count)
 		queue_flag_clear(QUEUE_FLAG_SAME_COMP, q);
 		queue_flag_clear(QUEUE_FLAG_SAME_FORCE, q);
 	}
-#endif	
 	spin_unlock_irq(q->queue_lock);
 #endif
 	return ret;
