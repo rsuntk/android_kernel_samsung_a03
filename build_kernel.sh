@@ -117,16 +117,20 @@ upload_to_tg() {
 	GIT_REPO_COMMIT_COUNT=$(cd .. && git rev-list --count HEAD)
 	release_text=$(cat <<EOF
 Scorpio CI-Kernel
-[$GIT_REPO_HASH](`echo $GIT_SERVER_URL`/`echo $GIT_REPO`/commit/`echo $GIT_SHA`)
+[$GIT_REPO_HASH](https://github.com/`echo $GIT_REPO`/commit/`echo $GIT_SHA`)
 
 *Build Date:* `date`
+
+\`\`\`sh
+`echo $GIT_COMMIT_MSG`
+\`\`\`
 
 *Notes:*
 - Untested, make sure to backup working boot.img before flash!
 
 *How to flash:*
 1. Unpack .tar.xz archive,
-2. Reboot to recovery,
+2. Reboot to TWRP,
 3. Select install, click Install Image,
 4. Flash this to boot partition,
 5. Reboot.

@@ -73,6 +73,7 @@ jobs:
         export GIT_REPO=$PRE_GITHUB_REPOSITORY
         export GIT_SHA=$PRE_GITHUB_SHA
         export GIT_SERVER_URL=$PRE_GITHUB_URL
+        export GIT_COMMIT_MSG=$PRE_GITHUB_COMMIT_MSG
         
         export TG_BOT_TOKEN=$PRE_BOT_TOKEN
         export TG_CHAT_ID=$PRE_CHAT_ID
@@ -91,6 +92,7 @@ jobs:
         PRE_GITHUB_REPOSITORY: ${{ github.repository }}
         PRE_GITHUB_SHA: ${{ github.sha }}
         PRE_GITHUB_URL: ${{ github.url }}
+        PRE_GITHUB_COMMIT_MSG: ${{ github.event.head_commit.message }}
         
     - name: Upload .img
       uses: actions/upload-artifact@v4
