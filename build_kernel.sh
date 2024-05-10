@@ -115,10 +115,31 @@ upload_to_tg() {
 	FILE_NAME="$TAR_XZ_FMT"
 	GIT_REPO_HASH=$(cd .. && git rev-parse --short HEAD)
 	GIT_REPO_COMMIT_COUNT=$(cd .. && git rev-list --count HEAD)
+	release_text=$(cat <<EOF
+Scorpio CI-Kernel
+[$GIT_REPO_HASH](`echo $GIT_SERVER_URL`/`echo $GIT_REPO`/commit/`echo $GIT_SHA`)
+
+*Build Date:* `date`
+
+*Notes:*
+- Untested, make sure to backup working boot.img before flash!
+
+*How to flash:*
+1. Unpack .tar.xz archive,
+2. Reboot to recovery,
+3. Select install, click Install Image,
+4. Flash this to boot partition,
+5. Reboot.
+
+@RissuDesu
+
+[Source Code](https://github.com/rsuntk/a03)
+EOF
+)
+
 	if [ ! -z $TG_BOT_TOKEN ]; then	
 		LINUX_VERSION=$(cd .. && make kernelversion)
-		file_description="`printf "Scorpio-CI build\nLinux Version: $LINUX_VERSION\nAndroid: $ANDROID_MAJOR_VERSION/$PLATFORM_VERSION\nKSU: $KSU_VERSION_NUMBER\nDevice: a03\n\nCI: $GIT_REPO_COMMIT_COUNT\nCommit Hash: $GIT_REPO_HASH\n\n*NOTE: Untested, make sure you have a backup kernel before flashing. Unpack tar.xz file first before flashing!*"`"
-		curl -s -F "chat_id=-`echo $TG_CHAT_ID`" -F "document=@$FILE_NAME" -F parse_mode='Markdown' -F "caption=$file_description" "https://api.telegram.org/bot$TG_BOT_TOKEN/sendDocument"
+		curl -s -F "chat_id=-`echo $TG_CHAT_ID`" -F "document=@$FILE_NAME" -F parse_mode='Markdown' -F "caption=$release_text" "https://api.telegram.org/bot$TG_BOT_TOKEN/sendDocument"
 	else
 		echo "! Telegram bot token empty. Abort kernel uploading";
 	fi

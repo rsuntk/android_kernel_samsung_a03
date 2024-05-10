@@ -69,6 +69,11 @@ jobs:
         export GIT_KSU_BRANCH=$PRE_INPUT_KSU_BRANCH
         export GIT_KSU_STATE=$PRE_INPUT_KSU_STATE
         export GIT_RISSU_DEBUGS=$PRE_INPUT_RISSU_DEBUG
+
+        export GIT_REPO=$PRE_GITHUB_REPOSITORY
+        export GIT_SHA=$PRE_GITHUB_SHA
+        export GIT_SERVER_URL=$PRE_GITHUB_URL
+        
         export TG_BOT_TOKEN=$PRE_BOT_TOKEN
         export TG_CHAT_ID=$PRE_CHAT_ID
         export TG_UPLOAD=$PRE_INPUT_UPLOAD_TO_TG
@@ -83,10 +88,12 @@ jobs:
         PRE_INPUT_UPLOAD_TO_TG: ${{ github.event.inputs.INPUT_UPLOAD_TO_TG }}
         PRE_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         PRE_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        PRE_GITHUB_REPOSITORY: ${{ github.repository }}
+        PRE_GITHUB_SHA: ${{ github.sha }}
+        PRE_GITHUB_URL: ${{ github.url }}
         
     - name: Upload .img
       uses: actions/upload-artifact@v4
       with:
         name: ${{ steps.buildKernel.outputs.imgName }}
         path: android_kernel_samsung_a03/Rissu/*.img
-
