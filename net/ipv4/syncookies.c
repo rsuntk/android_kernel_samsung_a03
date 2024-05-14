@@ -9,7 +9,6 @@
  *      as published by the Free Software Foundation; either version
  *      2 of the License, or (at your option) any later version.
  */
-
 #include <linux/tcp.h>
 #include <linux/slab.h>
 #include <linux/random.h>
@@ -19,12 +18,9 @@
 #include <net/secure_seq.h>
 #include <net/tcp.h>
 #include <net/route.h>
-
 static siphash_key_t syncookie_secret[2] __read_mostly;
-
 #define COOKIEBITS 24	/* Upper bits store count */
 #define COOKIEMASK (((__u32)1 << COOKIEBITS) - 1)
-
 /* TCP Timestamp: 6 lowest bits of timestamp sent in the cookie SYN-ACK
  * stores TCP options:
  *
@@ -48,7 +44,6 @@ static siphash_key_t syncookie_secret[2] __read_mostly;
  */
 #define TSBITS	6
 #define TSMASK	(((__u32)1 << TSBITS) - 1)
-
 static u32 cookie_hash(__be32 saddr, __be32 daddr, __be16 sport, __be16 dport,
 		       u32 count, int c)
 {
@@ -57,8 +52,6 @@ static u32 cookie_hash(__be32 saddr, __be32 daddr, __be16 sport, __be16 dport,
 			    (__force u32)sport << 16 | (__force u32)dport,
 			    count, &syncookie_secret[c]);
 }
-
-
 /*
  * when syncookies are in effect and tcp timestamps are enabled we encode
  * tcp options in the lower bits of the timestamp value that will be
@@ -71,15 +64,12 @@ u64 cookie_init_timestamp(struct request_sock *req)
 	struct inet_request_sock *ireq;
 	u32 ts, ts_now = tcp_time_stamp_raw();
 	u32 options = 0;
-
 	ireq = inet_rsk(req);
-
 	options = ireq->wscale_ok ? ireq->snd_wscale : TS_OPT_WSCALE_MASK;
 	if (ireq->sack_ok)
 		options |= TS_OPT_SACK;
 	if (ireq->ecn_ok)
 		options |= TS_OPT_ECN;
-
 	ts = ts_now & ~TSMASK;
 	ts |= options;
 	if (ts > ts_now) {
@@ -90,8 +80,6 @@ u64 cookie_init_timestamp(struct request_sock *req)
 	}
 	return (u64)ts * (USEC_PER_SEC / TCP_TS_HZ);
 }
-
-
 static __u32 secure_tcp_syn_cookie(__be32 saddr, __be32 daddr, __be16 sport,
 				   __be16 dport, __u32 sseq, __u32 data)
 {
@@ -111,7 +99,6 @@ static __u32 secure_tcp_syn_cookie(__be32 saddr, __be32 daddr, __be16 sport,
 		((cookie_hash(saddr, daddr, sport, dport, count, 1) + data)
 		 & COOKIEMASK));
 }
-
 /*
  * This retrieves the small "data" value from the syncookie.
  * If the syncookie is bad, the data returned will be out of
@@ -125,20 +112,16 @@ static __u32 check_tcp_syn_cookie(__u32 cookie, __be32 saddr, __be32 daddr,
 				  __be16 sport, __be16 dport, __u32 sseq)
 {
 	u32 diff, count = tcp_cookie_time();
-
 	/* Strip away the layers from the cookie */
 	cookie -= cookie_hash(saddr, daddr, sport, dport, 0, 0) + sseq;
-
 	/* Cookie is now reduced to (count * 2^24) ^ (hash % 2^24) */
 	diff = (count - (cookie >> COOKIEBITS)) & ((__u32) -1 >> COOKIEBITS);
 	if (diff >= MAX_SYNCOOKIE_AGE)
 		return (__u32)-1;
-
 	return (cookie -
 		cookie_hash(saddr, daddr, sport, dport, count - diff, 1))
 		& COOKIEMASK;	/* Leaving the data behind */
 }
-
 /*
  * MSS Values are chosen based on the 2011 paper
  * 'An Analysis of TCP Maximum Segement Sizes' by S. Alcock and R. Nelson.
@@ -157,7 +140,6 @@ static __u16 const msstab[] = {
 	1440,	/* 1440, 1452: PPPoE */
 	1460,
 };
-
 /*
  * Generate a syncookie.  mssp points to the mss, which is returned
  * rounded down to the value encoded in the cookie.
@@ -167,26 +149,21 @@ u32 __cookie_v4_init_sequence(const struct iphdr *iph, const struct tcphdr *th,
 {
 	int mssind;
 	const __u16 mss = *mssp;
-
 	for (mssind = ARRAY_SIZE(msstab) - 1; mssind ; mssind--)
 		if (mss >= msstab[mssind])
 			break;
 	*mssp = msstab[mssind];
-
 	return secure_tcp_syn_cookie(iph->saddr, iph->daddr,
 				     th->source, th->dest, ntohl(th->seq),
 				     mssind);
 }
 EXPORT_SYMBOL_GPL(__cookie_v4_init_sequence);
-
 __u32 cookie_v4_init_sequence(const struct sk_buff *skb, __u16 *mssp)
 {
 	const struct iphdr *iph = ip_hdr(skb);
 	const struct tcphdr *th = tcp_hdr(skb);
-
 	return __cookie_v4_init_sequence(iph, th, mssp);
 }
-
 /*
  * Check if a ack sequence number is a valid syncookie.
  * Return the decoded mss if it is, or 0 if not.
@@ -197,11 +174,9 @@ int __cookie_v4_check(const struct iphdr *iph, const struct tcphdr *th,
 	__u32 seq = ntohl(th->seq) - 1;
 	__u32 mssind = check_tcp_syn_cookie(cookie, iph->saddr, iph->daddr,
 					    th->source, th->dest, seq);
-
 	return mssind < ARRAY_SIZE(msstab) ? msstab[mssind] : 0;
 }
 EXPORT_SYMBOL_GPL(__cookie_v4_check);
-
 struct sock *tcp_get_cookie_sock(struct sock *sk, struct sk_buff *skb,
 				 struct request_sock *req,
 				 struct dst_entry *dst, u32 tsoff)
@@ -209,7 +184,6 @@ struct sock *tcp_get_cookie_sock(struct sock *sk, struct sk_buff *skb,
 	struct inet_connection_sock *icsk = inet_csk(sk);
 	struct sock *child;
 	bool own_req;
-
 	child = icsk->icsk_af_ops->syn_recv_sock(sk, skb, req, dst,
 						 NULL, &own_req);
 	if (child) {
@@ -228,7 +202,6 @@ struct sock *tcp_get_cookie_sock(struct sock *sk, struct sk_buff *skb,
 	return child;
 }
 EXPORT_SYMBOL(tcp_get_cookie_sock);
-
 /*
  * when syncookies are in effect and tcp timestamps are enabled we stored
  * additional tcp options in the timestamp.
@@ -242,45 +215,33 @@ bool cookie_timestamp_decode(const struct net *net,
 {
 	/* echoed timestamp, lowest bits contain options */
 	u32 options = tcp_opt->rcv_tsecr;
-
 	if (!tcp_opt->saw_tstamp)  {
 		tcp_clear_options(tcp_opt);
 		return true;
 	}
-
 	if (!net->ipv4.sysctl_tcp_timestamps)
 		return false;
-
 	tcp_opt->sack_ok = (options & TS_OPT_SACK) ? TCP_SACK_SEEN : 0;
-
 	if (tcp_opt->sack_ok && !net->ipv4.sysctl_tcp_sack)
 		return false;
-
 	if ((options & TS_OPT_WSCALE_MASK) == TS_OPT_WSCALE_MASK)
 		return true; /* no window scaling */
-
 	tcp_opt->wscale_ok = 1;
 	tcp_opt->snd_wscale = options & TS_OPT_WSCALE_MASK;
-
 	return net->ipv4.sysctl_tcp_window_scaling != 0;
 }
 EXPORT_SYMBOL(cookie_timestamp_decode);
-
 bool cookie_ecn_ok(const struct tcp_options_received *tcp_opt,
 		   const struct net *net, const struct dst_entry *dst)
 {
 	bool ecn_ok = tcp_opt->rcv_tsecr & TS_OPT_ECN;
-
 	if (!ecn_ok)
 		return false;
-
 	if (net->ipv4.sysctl_tcp_ecn)
 		return true;
-
 	return dst_feature(dst, RTAX_FEATURE_ECN);
 }
 EXPORT_SYMBOL(cookie_ecn_ok);
-
 /* On input, sk is a listener.
  * Output is listener if incoming packet would not create a child
  *           NULL if memory could not be allocated.
@@ -301,40 +262,31 @@ struct sock *cookie_v4_check(struct sock *sk, struct sk_buff *skb)
 	__u8 rcv_wscale;
 	struct flowi4 fl4;
 	u32 tsoff = 0;
-
 	if (!sock_net(sk)->ipv4.sysctl_tcp_syncookies || !th->ack || th->rst)
 		goto out;
-
 	if (tcp_synq_no_recent_overflow(sk))
 		goto out;
-
 	mss = __cookie_v4_check(ip_hdr(skb), th, cookie);
 	if (mss == 0) {
 		__NET_INC_STATS(sock_net(sk), LINUX_MIB_SYNCOOKIESFAILED);
 		goto out;
 	}
-
 	__NET_INC_STATS(sock_net(sk), LINUX_MIB_SYNCOOKIESRECV);
-
 	/* check for timestamp cookie support */
 	memset(&tcp_opt, 0, sizeof(tcp_opt));
 	tcp_parse_options(sock_net(sk), skb, &tcp_opt, 0, NULL);
-
 	if (tcp_opt.saw_tstamp && tcp_opt.rcv_tsecr) {
 		tsoff = secure_tcp_ts_off(sock_net(sk),
 					  ip_hdr(skb)->daddr,
 					  ip_hdr(skb)->saddr);
 		tcp_opt.rcv_tsecr -= tsoff;
 	}
-
 	if (!cookie_timestamp_decode(sock_net(sk), &tcp_opt))
 		goto out;
-
 	ret = NULL;
 	req = inet_reqsk_alloc(&tcp_request_sock_ops, sk, false); /* for safety */
 	if (!req)
 		goto out;
-
 	ireq = inet_rsk(req);
 	treq = tcp_rsk(req);
 	treq->rcv_isn		= ntohl(th->seq) - 1;
@@ -354,21 +306,16 @@ struct sock *cookie_v4_check(struct sock *sk, struct sk_buff *skb)
 	req->ts_recent		= tcp_opt.saw_tstamp ? tcp_opt.rcv_tsval : 0;
 	treq->snt_synack	= 0;
 	treq->tfo_listener	= false;
-
 	ireq->ir_iif = inet_request_bound_dev_if(sk, skb);
-
 	/* We throwed the options of the initial SYN away, so we hope
 	 * the ACK carries the same options again (see RFC1122 4.2.3.8)
 	 */
 	RCU_INIT_POINTER(ireq->ireq_opt, tcp_v4_save_options(sock_net(sk), skb));
-
 	if (security_inet_conn_request(sk, skb, req)) {
 		reqsk_free(req);
 		goto out;
 	}
-
 	req->num_retrans = 0;
-
 	/*
 	 * We need to lookup the route here to get at the correct
 	 * window size. We should better make sure that the window size
@@ -386,7 +333,6 @@ struct sock *cookie_v4_check(struct sock *sk, struct sk_buff *skb)
 		reqsk_free(req);
 		goto out;
 	}
-
 	/* Try to redo what tcp_v4_send_synack did. */
 	req->rsk_window_clamp = tp->window_clamp ? :dst_metric(&rt->dst, RTAX_WINDOW);
 	/* limit the window selection if the user enforce a smaller rx buffer */
@@ -394,15 +340,12 @@ struct sock *cookie_v4_check(struct sock *sk, struct sk_buff *skb)
 	if (sk->sk_userlocks & SOCK_RCVBUF_LOCK &&
 	    (req->rsk_window_clamp > full_space || req->rsk_window_clamp == 0))
 		req->rsk_window_clamp = full_space;
-
-	tcp_select_initial_window(sock_net(sk), tcp_full_space(sk), req->mss,
+	tcp_select_initial_window(full_space, req->mss,
 				  &req->rsk_rcv_wnd, &req->rsk_window_clamp,
 				  ireq->wscale_ok, &rcv_wscale,
 				  dst_metric(&rt->dst, RTAX_INITRWND));
-
 	ireq->rcv_wscale  = rcv_wscale;
 	ireq->ecn_ok = cookie_ecn_ok(&tcp_opt, sock_net(sk), &rt->dst);
-
 	ret = tcp_get_cookie_sock(sk, skb, req, &rt->dst, tsoff);
 	/* ip_queue_xmit() depends on our flow being setup
 	 * Normal sockets get it right from inet_csk_route_child_sock()
