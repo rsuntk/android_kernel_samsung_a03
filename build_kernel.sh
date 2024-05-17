@@ -20,9 +20,12 @@ MIN_CORES="2"
 MK_SC="mk_cmd.sh"
 MGSKBT=$RSUDIR/bin/mgskbt
 OUTDIR="$(pwd)/out"
-DEFCONFIG="rsuntk_defconfig"
-TMP_DEFCONFIG="tmprsu_defconfig"
-
+if [[ $GIT_CI_RELEASE_TYPE = "release" ]]; then
+	DEFCONFIG="rsuntk_defconfig"
+	sed -i 's/CONFIG_LOCALVERSION=\"\"/CONFIG_LOCALVERSION="-Scorpio-`echo $GIT_KERNEL_REVNUM`"/' "$(pwd)/arch/arm64/configs/$DEFCONFIG"
+elif [[ $GIT_CI_RELEASE_TYPE = "testing" ]]; then
+	DEFCONFIG="rsuci_defconfig"
+fi
 # declare global variable
 export CROSS_COMPILE=$(pwd)/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
 export ARCH=arm64
@@ -35,9 +38,6 @@ export BSP_BUILD_ANDROID_OS=y
 
 # giving magiskboot and rndm
 chmod +x $MGSKBT && chmod +x $RNDM_BIN
-
-# copy rsuntk_defconfig
-cat arch/$ARCH/configs/$DEFCONFIG > arch/$ARCH/configs/$TMP_DEFCONFIG
 
 if [ $PROC -lt $MIN_CORES ]; then
 	TC="1"
@@ -80,7 +80,7 @@ else
 fi
 
 printf "#! /usr/bin/env bash
-make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- tmprsu_defconfig
+make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- `echo $DEFCONFIG`
 make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- -j`echo $TC`" > $MK_SC
 
 if [[ $GIT_KSU_STATE = 'true' ]]; then
@@ -108,15 +108,17 @@ upload_to_tg() {
 	# Thanks to ItzKaguya, for references.
 	cd $RSUDIR
 	FILE_NAME="$LZ4_FMT"
+	LINUX_VERSION=$(cd .. && make kernelversion)
 	GIT_REPO_HASH=$(cd .. && git rev-parse --short HEAD)
 	GIT_COMMIT_MSG=$(cd .. && git rev-list --max-count=1 --no-commit-header --format=%B HEAD)
 	GIT_REPO_COMMIT_COUNT=$(cd .. && git rev-list --count HEAD)
-	release_text=$(cat <<EOF
-Scorpio CI-Kernel
+	if [[ $GIT_CI_RELEASE_TYPE = "release" ]]; then
+		release_text=$(cat <<EOF
+Scorpio Kernel v`echo $GIT_KERNEL_REVNUM`
 [$GIT_REPO_HASH](https://github.com/`echo $GIT_REPO`/commit/`echo $GIT_SHA`)
 
 *Build Date:* `date`
-Kernel Version: `make kernelversion`
+Kernel Version: `echo $LINUX_VERSION`
 
 \`\`\`
 `echo $GIT_COMMIT_MSG`
@@ -143,7 +145,7 @@ tar -cvf ScorpioCI.tar boot.img
 \`\`\`
 
 B. In Windows:
-1. Unpack .lz4 file with 7zip-ZS or WinRAR
+1. Unpack .lz4 file with 7Zip-ZS or WinRAR
 2. Rename the .img file to boot.img
 3. Right click at the boot.img file
 4. Select 7zip ZS, click add to archive
@@ -154,9 +156,53 @@ Bot by @RissuDesu
 [Source Code](https://github.com/rsuntk/a03)
 EOF
 )
+	elif [[ $GIT_CI_RELEASE_TYPE = "testing" ]]; then
+		release_text=$(cat <<EOF
+Scorpio CI-Kernel
+[$GIT_REPO_HASH](https://github.com/`echo $GIT_REPO`/commit/`echo $GIT_SHA`)
 
-	if [ ! -z $TG_BOT_TOKEN ]; then	
-		LINUX_VERSION=$(cd .. && make kernelversion)
+*Build Date:* `date`
+Kernel Version: `echo $LINUX_VERSION`
+
+\`\`\`
+`echo $GIT_COMMIT_MSG`
+\`\`\`
+
+*Notes:*
+- Untested, make sure to backup working boot.img before flash!
+
+*How to flash:*
+1. Unpack .lz4 archive,
+2. Reboot to TWRP,
+3. Select install, click Install Image,
+4. Flash this to boot partition,
+5. Reboot.
+
+*How to make it ODIN flashable (tarball file)*
+A. In Linux:
+1. Install required dependency: lz4
+2. Type this command:
+\`\`\`sh
+lz4 -d <Scorpio-CI-file>.lz4
+mv <Scorpio-CI-file>.img boot.img
+tar -cvf ScorpioCI.tar boot.img
+\`\`\`
+
+B. In Windows:
+1. Unpack .lz4 file with 7Zip-ZS or WinRAR
+2. Rename the .img file to boot.img
+3. Right click at the boot.img file
+4. Select 7zip ZS, click add to archive
+5. Select Archive format to tar, and set it to GNU (default)
+
+Bot by @RissuDesu
+
+[Source Code](https://github.com/rsuntk/a03)
+EOF
+)
+	fi
+
+	if [ ! -z $TG_BOT_TOKEN ]; then
 		curl -s -F "chat_id=-`echo $TG_CHAT_ID`" -F "document=@$FILE_NAME" -F parse_mode='Markdown' -F "caption=$release_text" "https://api.telegram.org/bot$TG_BOT_TOKEN/sendDocument"
 	else
 		echo "! Telegram bot token empty. Abort kernel uploading";
