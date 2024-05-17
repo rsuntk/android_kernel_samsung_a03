@@ -5,6 +5,9 @@ on:
       INPUT_LOCALVERSION:
         description: 'Describe localversion for kernel'
         required: false
+      INPUT_KERNEL_REVISION:
+        description: 'Describe kernel revision [release-ci only]'
+        required: false
       INPUT_KSU_BRANCH:
         description: 'KernelSU branch [ignore if no KSU]'
         required: true
@@ -13,6 +16,14 @@ on:
         options:
         - stable
         - dev
+      INPUT_KERNEL_CI_TYPE:
+        description: 'CI type'
+        required: true
+        default: testing
+        type: choice
+        options:
+        - release
+        - testing
       INPUT_KSU_STATE:
         description: 'KernelSU support'
         type: boolean
@@ -81,6 +92,8 @@ jobs:
         PRE_INPUT_KSU_BRANCH: ${{ github.event.inputs.INPUT_KSU_BRANCH }}
         PRE_INPUT_KSU_STATE: ${{ github.event.inputs.INPUT_KSU_STATE }}
         PRE_INPUT_UPLOAD_TO_TG: ${{ github.event.inputs.INPUT_UPLOAD_TO_TG }}
+        PRE_INPUT_KERNEL_CI_TYPE: ${{ github.event.inputs.INPUT_KERNEL_CI_TYPE }}
+        PRE_INPUT_KERNEL_REV: ${{ github.event.inputs.INPUT_KERNEL_REVISION }}
         PRE_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         PRE_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         PRE_GITHUB_REPOSITORY: ${{ github.repository }}
