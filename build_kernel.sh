@@ -219,6 +219,10 @@ if [ -f $MK_SC ]; then
 	fi
 	
 	if [[ $BUILD_STATE = '0' ]]; then
+		UTSRELASE="$(pwd)/out/include/generated/utsrelease.h"
+		if [ -f $UTSRELASE ]; then
+			cat $UTSRELASE
+		fi
 		mk_bootimg;
 		if [[ $TG_UPLOAD = 'true' ]]; then
 			upload_to_tg;
