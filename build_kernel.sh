@@ -22,7 +22,7 @@ MGSKBT=$RSUDIR/bin/mgskbt
 OUTDIR="$(pwd)/out"
 if [[ $GIT_CI_RELEASE_TYPE = "release" ]]; then
 	DEFCONFIG="rsuntk_defconfig"
-	sed -i 's/CONFIG_LOCALVERSION=\"\"/CONFIG_LOCALVERSION="-Scorpio-`echo $GIT_KERNEL_REVNUM`"/' "$(pwd)/arch/arm64/configs/$DEFCONFIG"
+	sed -i 's/CONFIG_LOCALVERSION=\"\"/CONFIG_LOCALVERSION="-Scorpio-v`echo $GIT_KERNEL_REVNUM`"/' "$(pwd)/arch/arm64/configs/$DEFCONFIG"
 elif [[ $GIT_CI_RELEASE_TYPE = "testing" ]]; then
 	DEFCONFIG="rsuci_defconfig"
 fi
@@ -45,14 +45,6 @@ elif [ $PROC -gt $MIN_CORES ]; then
 	TC=$(nproc --all);
 else
 	TC=$MIN_CORES
-fi
-
-if [ ! -z $GIT_LOCALVERSION ]; then
-	LOCALVERSION="`echo $GIT_LOCALVERSION`_`echo $RNDM`"
-	LTR="`echo $GIT_LOCALVERSION`"
-else
-	LOCALVERSION="Scorpio-CI"
-	LTR="$LOCALVERSION"
 fi
 
 if [[ $GIT_KSU_STATE = 'true' ]]; then
@@ -83,10 +75,14 @@ printf "#! /usr/bin/env bash
 make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- `echo $DEFCONFIG`
 make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- -j`echo $TC`" > $MK_SC
 
-if [[ $GIT_KSU_STATE = 'true' ]]; then
-	FMT="`echo $LTR`-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`_`echo $RNDM`"
-else
-	FMT="`echo $LTR`-NO_KSU_`echo $RNDM`"
+if [[ $GIT_KSU_STATE = 'true' ]] && [[ $GIT_CI_RELEASE_TYPE = "release" ]]; then
+	FMT="Scorpio-`echo $GIT_KERNEL_REVNUM`-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`"
+elif [[ $GIT_KSU_STATE = 'false' ]] && [[ $GIT_CI_RELEASE_TYPE = "release" ]]; then
+	FMT="Scorpio-`echo $GIT_KERNEL_REVNUM`-NoKSU"
+elif [[ $GIT_KSU_STATE = 'true' ]] && [[ $GIT_CI_RELEASE_TYPE = "testing" ]]; then
+	FMT="Scorpio-CI-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`"
+elif [[ $GIT_KSU_STATE = 'false' ]] && [[ $GIT_CI_RELEASE_TYPE = "testing" ]]; then
+	FMT="Scorpio-CI-NoKSU"
 fi
 
 BOOT_FMT="`echo $FMT`.img"
