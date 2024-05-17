@@ -132,7 +132,24 @@ Kernel Version: `make kernelversion`
 4. Flash this to boot partition,
 5. Reboot.
 
-@RissuDesu
+*How to make it ODIN flashable (tarball file)*
+A. In Linux:
+1. Install required dependency: lz4
+2. Type this command:
+\`\`\`sh
+lz4 -d <Scorpio-CI-file>.lz4
+mv <Scorpio-CI-file>.img boot.img
+tar -cvf ScorpioCI.tar boot.img
+\`\`\`
+
+B. In Windows:
+1. Unpack .lz4 file with 7zip-ZS or WinRAR
+2. Rename the .img file to boot.img
+3. Right click at the boot.img file
+4. Select 7zip ZS, click add to archive
+5. Select Archive format to tar, and set it to GNU (default)
+
+Bot by @RissuDesu
 
 [Source Code](https://github.com/rsuntk/a03)
 EOF
