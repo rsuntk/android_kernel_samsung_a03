@@ -76,9 +76,9 @@ make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y `echo $FLAGS` CC=clang LD=ld.
 make -C $(pwd) O=$(pwd)/out BSP_BUILD_DT_OVERLAY=y `echo $FLAGS` CC=clang LD=ld.lld ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- -j`echo $TC`" > $MK_SC
 
 if [[ $GIT_KSU_STATE = 'true' ]] && [[ $GIT_CI_RELEASE_TYPE = "release" ]]; then
-	FMT="Scorpio-`echo $GIT_KERNEL_REVNUM`-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`"
+	FMT="Scorpio-v`echo $GIT_KERNEL_REVNUM`-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`"
 elif [[ $GIT_KSU_STATE = 'false' ]] && [[ $GIT_CI_RELEASE_TYPE = "release" ]]; then
-	FMT="Scorpio-`echo $GIT_KERNEL_REVNUM`-NoKSU"
+	FMT="Scorpio-v`echo $GIT_KERNEL_REVNUM`-NoKSU"
 elif [[ $GIT_KSU_STATE = 'true' ]] && [[ $GIT_CI_RELEASE_TYPE = "testing" ]]; then
 	FMT="Scorpio-CI-KSU-`echo $KSU_VERSION_NUMBER`-`echo $KSU_VERSION_TAGS`"
 elif [[ $GIT_KSU_STATE = 'false' ]] && [[ $GIT_CI_RELEASE_TYPE = "testing" ]]; then
