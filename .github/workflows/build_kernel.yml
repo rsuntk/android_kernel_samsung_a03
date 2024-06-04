@@ -30,6 +30,9 @@ on:
       INPUT_UPLOAD_TO_TG:
         description: 'Upload to Telegram'
         type: boolean
+      INPUT_SELINUX_STATE:
+        description: 'SELinux Permissive (testing)'
+        type: boolean
 
 jobs:
   build:
@@ -83,6 +86,12 @@ jobs:
         export GIT_REPO=$PRE_GITHUB_REPOSITORY
         export GIT_SHA=$PRE_GITHUB_SHA
         export GIT_SERVER_URL=$PRE_GITHUB_URL
+
+        if [[ $PRE_INPUT_SELINUX_STATE = "true "]]; then
+          export SELINUX_FLAGS="permissive"
+        else
+          export SELINUX_FLAGS="enforcing"
+        fi
         
         export TG_BOT_TOKEN=$PRE_BOT_TOKEN
         export TG_CHAT_ID=$PRE_CHAT_ID
@@ -97,6 +106,7 @@ jobs:
         PRE_INPUT_UPLOAD_TO_TG: ${{ github.event.inputs.INPUT_UPLOAD_TO_TG }}
         PRE_INPUT_KERNEL_CI_TYPE: ${{ github.event.inputs.INPUT_KERNEL_CI_TYPE }}
         PRE_INPUT_KERNEL_REV: ${{ github.event.inputs.INPUT_KERNEL_REVISION }}
+        PRE_INPUT_SELINUX_STATE: ${{ github.event.inputs.INPUT_SELINUX_STATE }}
         PRE_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         PRE_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         PRE_GITHUB_REPOSITORY: ${{ github.repository }}
