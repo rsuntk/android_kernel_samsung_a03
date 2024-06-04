@@ -87,7 +87,7 @@ jobs:
         export GIT_SHA=$PRE_GITHUB_SHA
         export GIT_SERVER_URL=$PRE_GITHUB_URL
 
-        if [[ $PRE_INPUT_SELINUX_STATE = "true "]]; then
+        if [[ $PRE_INPUT_SELINUX_STATE = "true" ]]; then
           export SELINUX_FLAGS="permissive"
         else
           export SELINUX_FLAGS="enforcing"
