@@ -161,7 +161,7 @@ Scorpio CI-Kernel
 
 *Build Date:* `date`
 Kernel Version: `echo $LINUX_VERSION`
-Branch: `echo $GIT_CURRENT_BRANCH`
+Branch: \`\`\``echo $GIT_CURRENT_BRANCH`\`\`\`
 
 \`\`\`
 `echo $GIT_COMMIT_MSG`
