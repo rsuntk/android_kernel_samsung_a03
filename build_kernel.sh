@@ -108,7 +108,9 @@ upload_to_tg() {
 	GIT_REPO_HASH=$(cd .. && git rev-parse --short HEAD)
 	GIT_COMMIT_MSG=$(cd .. && git rev-list --max-count=1 --no-commit-header --format=%B HEAD)
 	GIT_REPO_COMMIT_COUNT=$(cd .. && git rev-list --count HEAD)
-	if [[ $GIT_CI_RELEASE_TYPE = "release" ]]; then
+	GIT_CURRENT_BRANCH=$(cd .. && git rev-parse --abbrev-ref HEAD)
+ 
+ 	if [[ $GIT_CI_RELEASE_TYPE = "release" ]]; then
 		release_text=$(cat <<EOF
 Scorpio Kernel v`echo $GIT_KERNEL_REVNUM`
 [$GIT_REPO_HASH](https://github.com/`echo $GIT_REPO`/commit/`echo $GIT_SHA`)
@@ -159,6 +161,7 @@ Scorpio CI-Kernel
 
 *Build Date:* `date`
 Kernel Version: `echo $LINUX_VERSION`
+Branch: `echo $GIT_CURRENT_BRANCH`
 
 \`\`\`
 `echo $GIT_COMMIT_MSG`
@@ -217,7 +220,9 @@ if [ -f $MK_SC ]; then
 	if [[ $BUILD_STATE = '0' ]]; then
 		UTSRELASE="$(pwd)/out/include/generated/utsrelease.h"
 		if [ -f $UTSRELASE ]; then
+  			echo "----------------------------------------------------"
 			cat $UTSRELASE
+  			echo "----------------------------------------------------"
 		fi
 		mk_bootimg;
 		if [[ $TG_UPLOAD = 'true' ]]; then
