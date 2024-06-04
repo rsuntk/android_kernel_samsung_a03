@@ -120,14 +120,15 @@ void selinux_avc_init(struct selinux_avc **avc);
 extern struct selinux_state selinux_state;
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
+extern int selinux_enforcing;
 static inline bool enforcing_enabled(struct selinux_state *state)
 {
-	return state->enforcing;
+	return selinux_enforcing;
 }
 
 static inline void enforcing_set(struct selinux_state *state, bool value)
 {
-	state->enforcing = value;
+	selinux_enforcing = value;
 }
 #else
 static inline bool enforcing_enabled(struct selinux_state *state)
@@ -246,7 +247,9 @@ struct extended_perms {
 };
 
 /* definitions of av_decision.flags */
+#if !defined(SELINUX_STATE_ENFORCING)
 #define AVD_FLAGS_PERMISSIVE	0x0001
+#endif
 
 void security_compute_av(struct selinux_state *state,
 			 u32 ssid, u32 tsid,
