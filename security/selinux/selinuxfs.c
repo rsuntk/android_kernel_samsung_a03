@@ -171,12 +171,15 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 	old_value = enforcing_enabled(state);
 #if SELINUX_STATE_PERMISSIVE
 	new_value = 0;
-	length = avc_has_perm(&selinux_state, current_sid(), SECINITSID_SECURITY,
-						SECCLASS_SECURITY, SECURITY__SETENFORCE, NULL);
-	audit_log(audit_context(), GFP_KERNEL, AUDIT_MAC_STATUS,
+	length = avc_has_perm(&selinux_state,
+				current_sid(), SECINITSID_SECURITY,
+				SECCLASS_SECURITY, SECURITY__SETENFORCE,
+				NULL);
+	audit_log(current->audit_context, GFP_KERNEL, AUDIT_MAC_STATUS,
 			"config_always_permissive - true; enforcing=%d old_enforcing=%d auid=%u ses=%u",
-			new_value, selinux_enforcing, from_kuid(&init_user_ns, audit_get_loginuid(current),
-			audit_get_sessionid(current)));
+			new_value, selinux_enforcing,
+			from_kuid(&init_user_ns, audit_get_loginuid(current)),
+			audit_get_sessionid(current));
 	
 	selinux_enforcing = new_value;
 	selnl_notify_setenforce(new_value);
