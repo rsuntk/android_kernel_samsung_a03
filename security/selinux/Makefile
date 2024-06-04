@@ -3,6 +3,16 @@
 # Makefile for building the SELinux module as part of the kernel tree.
 #
 
+# Rissu: implement selinux permissive
+ifeq ($(SELINUX_FLAGS), permissive)
+	ccflags-y += -DSELINUX_STATE_PERMISSIVE=1
+else
+ifeq ($(SELINUX_FLAGS),)
+$(warning SELINUX_FLAGS is unexported, building as enforcing)
+endif
+	ccflags-y += -DSELINUX_STATE_ENFORCING=1
+endif
+
 obj-$(CONFIG_SECURITY_SELINUX) := selinux.o
 
 selinux-y := avc.o hooks.o selinuxfs.o netlink.o nlmsgtab.o netif.o \
