@@ -129,13 +129,8 @@ int selinux_enabled = CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE;
 static int __init selinux_enabled_setup(char *str)
 {
 	unsigned long enabled;
-	if (!kstrtoul(str, 0, &enabled)) {
-#if SELINUX_STATE_PERMISSIVE
-		selinux_enabled = 0;
-#else
+	if (!kstrtoul(str, 0, &enabled))
 		selinux_enabled = enabled ? 1 : 0;
-#endif
-	}
 	return 1;
 }
 __setup("selinux=", selinux_enabled_setup);
