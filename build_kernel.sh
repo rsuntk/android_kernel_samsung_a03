@@ -210,20 +210,9 @@ B. In Windows:
 4. Select 7zip ZS, click add to archive
 5. Select Archive format to tar, and set it to GNU (default)
 
-*How to sends last_kmsg:*
-1. Flash this kernel, and if its bootlooping,
-2. Flash a working kernel.
-3. After booting into system, open termux (or terminal emulator or adb shell),
-4. and then type:
-\`\`\`sh
-su -c cat /proc/last_kmsg > /sdcard/last_kmsg.txt
-\`\`\`
-5. Check your root Internal Storage.
-6. Send it to the Group.
-
-Bot by @RissuDesu
-
+[How to send last_kmsg](https://github.com/rsuntk/android_kernel_samsung_a03/wiki/How-to-get-last_kmsg)
 [Source Code](https://github.com/rsuntk/android_kernel_samsung_a03)
+@RissuDesu
 EOF
 )
 	fi
