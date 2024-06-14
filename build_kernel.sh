@@ -117,6 +117,7 @@ Scorpio Kernel v`echo $GIT_KERNEL_REVNUM` Release
 
 *Build Date:* `date`
 *Kernel Version:* `echo $LINUX_VERSION`
+*SELinux:* `echo $SELINUX_FLAGS`
 
 \`\`\`
 `echo $GIT_COMMIT_MSG`
@@ -165,6 +166,7 @@ Scorpio CI-Kernel
 *Build Date:* `date`
 *Kernel Version:* `echo $LINUX_VERSION`
 *Target:* Testing only
+*SELinux:* `echo $SELINUX_FLAGS`
 
 *Branch:*
 \`\`\`
@@ -203,9 +205,20 @@ B. In Windows:
 4. Select 7zip ZS, click add to archive
 5. Select Archive format to tar, and set it to GNU (default)
 
+*How to sends last_kmsg:*
+1. Flash this kernel, and if its bootlooping,
+2. Flash a working kernel.
+3. After booting into system, open termux (or terminal emulator or adb shell),
+4. and then type:
+\`\`\`sh
+su -c cat /proc/last_kmsg > /sdcard/last_kmsg.txt
+\`\`\`
+5. Check your root Internal Storage.
+6. Send it to the Group.
+
 Bot by @RissuDesu
 
-[Source Code](https://github.com/rsuntk/a03)
+[Source Code](https://github.com/rsuntk/android_kernel_samsung_a03)
 EOF
 )
 	fi
