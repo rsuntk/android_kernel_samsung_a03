@@ -108,13 +108,15 @@ upload_to_tg() {
 	GIT_REPO_HASH=$(cd .. && git rev-parse --short HEAD)
 	GIT_COMMIT_MSG=$(cd .. && git rev-list --max-count=1 --no-commit-header --format=%B HEAD)
 	GIT_REPO_COMMIT_COUNT=$(cd .. && git rev-list --count HEAD)
-	if [[ $GIT_CI_RELEASE_TYPE = "release" ]]; then
+	GIT_CURRENT_BRANCH=$(cd .. && git rev-parse --abbrev-ref HEAD)
+ 
+ 	if [[ $GIT_CI_RELEASE_TYPE = "release" ]]; then
 		release_text=$(cat <<EOF
-Scorpio Kernel v`echo $GIT_KERNEL_REVNUM`
+Scorpio Kernel v`echo $GIT_KERNEL_REVNUM` Release
 [$GIT_REPO_HASH](https://github.com/`echo $GIT_REPO`/commit/`echo $GIT_SHA`)
 
 *Build Date:* `date`
-Kernel Version: `echo $LINUX_VERSION`
+*Kernel Version:* `echo $LINUX_VERSION`
 
 \`\`\`
 `echo $GIT_COMMIT_MSG`
@@ -131,8 +133,11 @@ Kernel Version: `echo $LINUX_VERSION`
 5. Reboot.
 
 *How to make it ODIN flashable (tarball file)*
+
 A. In Linux:
-1. Install required dependency: lz4
+1. Install required dependency:
+lz4
+
 2. Type this command:
 \`\`\`sh
 lz4 -d <Scorpio-CI-file>.lz4
@@ -149,7 +154,7 @@ B. In Windows:
 
 Bot by @RissuDesu
 
-[Source Code](https://github.com/rsuntk/a03)
+[Source Code](https://github.com/rsuntk/android_kernel_samsung_a03)
 EOF
 )
 	elif [[ $GIT_CI_RELEASE_TYPE = "testing" ]]; then
@@ -158,8 +163,15 @@ Scorpio CI-Kernel
 [$GIT_REPO_HASH](https://github.com/`echo $GIT_REPO`/commit/`echo $GIT_SHA`)
 
 *Build Date:* `date`
-Kernel Version: `echo $LINUX_VERSION`
+*Kernel Version:* `echo $LINUX_VERSION`
+*Target:* Testing only
 
+*Branch:*
+\`\`\`
+`echo $GIT_CURRENT_BRANCH`
+\`\`\`
+
+*Commit msg:*
 \`\`\`
 `echo $GIT_COMMIT_MSG`
 \`\`\`
@@ -217,7 +229,9 @@ if [ -f $MK_SC ]; then
 	if [[ $BUILD_STATE = '0' ]]; then
 		UTSRELASE="$(pwd)/out/include/generated/utsrelease.h"
 		if [ -f $UTSRELASE ]; then
+  			echo "----------------------------------------------------"
 			cat $UTSRELASE
+  			echo "----------------------------------------------------"
 		fi
 		mk_bootimg;
 		if [[ $TG_UPLOAD = 'true' ]]; then
