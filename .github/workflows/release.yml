@@ -29,4 +29,5 @@ jobs:
         with:
           token: ${{ github.token }}
           files: |
-            android_kernel_samsung_a03/Rissu/*.img
+            KSU/*.img
+            No_KSU/*.img
