@@ -50,9 +50,9 @@ fi
 if [[ $GIT_KSU_STATE = 'true' ]]; then
 	if [ ! -d $(pwd)/KernelSU ]; then
 		if [[ $GIT_KSU_BRANCH = 'dev' ]]; then
-			curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
+			curl -LSs "https://raw.githubusercontent.com/rsuntk/KernelSU/main/kernel/setup.sh" | bash -s main
 		elif [[ $GIT_KSU_BRANCH = 'stable' ]]; then
-			curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+			curl -LSs "https://raw.githubusercontent.com/rsuntk/KernelSU/main/kernel/setup.sh" | bash -
 		fi
 	fi
 	
