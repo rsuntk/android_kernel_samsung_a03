@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-manager:
+  build-kernel:
     uses: ./.github/workflows/build.yml
     secrets: inherit
 
