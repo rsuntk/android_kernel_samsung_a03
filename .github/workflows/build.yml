@@ -121,8 +121,8 @@ jobs:
       id: buildKernel
       run: |
         export GIT_LOCALVERSION=$PRE_INPUT_LOCALVERSION
-        export GIT_KSU_BRANCH=$PRE_INPUT_KSU_BRANCH
-        export GIT_KSU_STATE=$PRE_INPUT_KSU_STATE
+        export GIT_KSU_BRANCH=dev
+        export GIT_KSU_STATE=false
 
         export GIT_CI_RELEASE_TYPE=$PRE_INPUT_KERNEL_CI_TYPE
         export GIT_KERNEL_REVNUM=$PRE_INPUT_KERNEL_REV

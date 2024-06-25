@@ -211,7 +211,8 @@ EOF
 	fi
 
 	if [ ! -z $TG_BOT_TOKEN ]; then
-		curl -s -F "chat_id=-`echo $TG_CHAT_ID`" -F "document=@$FILE_NAME" -F parse_mode='Markdown' -F "caption=$release_text" "https://api.telegram.org/bot$TG_BOT_TOKEN/sendDocument"
+		echo ""
+		#curl -s -F "chat_id=-`echo $TG_CHAT_ID`" -F "document=@$FILE_NAME" -F parse_mode='Markdown' -F "caption=$release_text" "https://api.telegram.org/bot$TG_BOT_TOKEN/sendDocument"
 	else
 		echo "! Telegram bot token empty. Abort kernel uploading";
 	fi
