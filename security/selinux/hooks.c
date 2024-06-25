@@ -104,24 +104,19 @@ struct selinux_state selinux_state;
 static atomic_t selinux_secmark_refcount = ATOMIC_INIT(0);
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-int selinux_enforcing;
-#endif
+static int selinux_enforcing_boot;
+
 static int __init enforcing_setup(char *str)
 {
 	unsigned long enforcing;
-	if (!kstrtoul(str, 0, &enforcing)) {
-#if SELINUX_STATE_PERMISSIVE
-		selinux_enforcing = 0;
-#else
-		selinux_enforcing = enforcing ? 1 : 0;
-#endif
-	}
+	if (!kstrtoul(str, 0, &enforcing))
+		selinux_enforcing_boot = enforcing ? 1 : 0;
 	return 1;
 }
 __setup("enforcing=", enforcing_setup);
-//#else
+#else
 #define selinux_enforcing_boot 1
-//endif
+#endif
 
 #ifdef CONFIG_SECURITY_SELINUX_BOOTPARAM
 int selinux_enabled = CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE;
@@ -288,7 +283,7 @@ static int __inode_security_revalidate(struct inode *inode,
 
 	might_sleep_if(may_sleep);
 
-	if (ss_initialized &&
+	if (selinux_state.initialized &&
 	    isec->initialized != LABEL_INITIALIZED) {
 		if (!may_sleep)
 			return -ECHILD;
@@ -637,7 +632,7 @@ static int selinux_get_mnt_opts(const struct super_block *sb,
 	if (!(sbsec->flags & SE_SBINITIALIZED))
 		return -EINVAL;
 
-	if (!ss_initialized)
+	if (!selinux_state.initialized)
 		return -EINVAL;
 
 	/* make sure we always check enough bits to cover the mask */
@@ -760,7 +755,7 @@ static int selinux_set_mnt_opts(struct super_block *sb,
 
 	mutex_lock(&sbsec->lock);
 
-	if (!ss_initialized) {
+	if (!selinux_state.initialized) {
 		if (!num_opts) {
 			/* Defer initialization until selinux_complete_init,
 			   after the initial policy is loaded and the security
@@ -1049,7 +1044,7 @@ static int selinux_sb_clone_mnt_opts(const struct super_block *oldsb,
 	 * if the parent was able to be mounted it clearly had no special lsm
 	 * mount options.  thus we can safely deal with this superblock later
 	 */
-	if (!ss_initialized)
+	if (!selinux_state.initialized)
 		return 0;
 
 	/*
@@ -3065,7 +3060,7 @@ static int selinux_inode_init_security(struct inode *inode, struct inode *dir,
 		isec->initialized = LABEL_INITIALIZED;
 	}
 
-	if (!ss_initialized || !(sbsec->flags & SBLABEL_MNT))
+	if (!selinux_state.initialized || !(sbsec->flags & SBLABEL_MNT))
 		return -EOPNOTSUPP;
 
 	if (name)
@@ -6989,10 +6984,6 @@ static __init int selinux_init(void)
 	if (avc_add_callback(selinux_lsm_notifier_avc_callback, AVC_CALLBACK_RESET))
 		panic("SELinux: Unable to register AVC LSM notifier callback\n");
 
-#if SELINUX_STATE_PERMISSIVE
-	selinux_enforcing = 0;
-#endif
-
 	if (selinux_enforcing_boot)
 		printk(KERN_DEBUG "SELinux:  Starting in enforcing mode\n");
 	else
@@ -7114,20 +7105,19 @@ static void selinux_nf_ip_exit(void)
 #endif /* CONFIG_NETFILTER */
 
 #ifdef CONFIG_SECURITY_SELINUX_DISABLE
-static int selinux_disabled;
 int selinux_disable(struct selinux_state *state)
 {
-	if (ss_initialized) {
+	if (state->initialized) {
 		/* Not permitted after initial policy load. */
 		return -EINVAL;
 	}
 
-	if (selinux_disabled) {
+	if (state->disabled) {
 		/* Only do this once. */
 		return -EINVAL;
 	}
 
-	selinux_disabled = 1;
+	state->disabled = 1;
 
 	printk(KERN_INFO "SELinux:  Disabled at runtime.\n");
 
