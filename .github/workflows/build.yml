@@ -1,38 +1,85 @@
 name: Build Kernel
+
 on:
   workflow_dispatch:
-    inputs:
-      INPUT_LOCALVERSION:
-        description: 'Describe localversion for kernel'
-        required: false
-      INPUT_KERNEL_REVISION:
-        description: 'Describe kernel revision [release-ci only]'
-        required: false
-      INPUT_KSU_BRANCH:
-        description: 'KernelSU branch [ignore if no KSU]'
-        required: true
-        default: stable
-        type: choice
-        options:
-        - stable
-        - dev
-      INPUT_KERNEL_CI_TYPE:
-        description: 'CI type'
-        required: true
-        default: testing
-        type: choice
-        options:
-        - release
-        - testing
-      INPUT_KSU_STATE:
-        description: 'KernelSU support'
-        type: boolean
-      INPUT_UPLOAD_TO_TG:
-        description: 'Upload to Telegram'
-        type: boolean
+  workflow_call:
 
 jobs:
-  build:
+  ksu:
+    runs-on: ubuntu-latest
+    environment: TG
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        path: android_kernel_samsung_a03
+        fetch-depth: 0
+    - name: Prepare dependencies
+      run: |
+        sudo apt update -y
+        sudo apt install bc cpio flex bison aptitude git python-is-python3 tar perl curl lz4 -y
+        sudo aptitude install libssl-dev -y
+    - name: Fetch toolchains
+      run: |
+        mkdir toolchain
+        cd toolchain
+        mkdir -p gcc/linux-x86/aarch64
+        cd gcc/linux-x86/aarch64/
+        git clone https://gitlab.com/Rissu-Projekt/toolchains/aarch64-linux-android.git aarch64-linux-android-4.9
+        cd ../../..
+        mkdir -p clang/host/linux-x86
+        cd clang/host/linux-x86
+        git clone https://gitlab.com/Rissu-Projekt/toolchains/clang-toolchains.git clang-r383902
+      working-directory: android_kernel_samsung_a03
+    - name: Fetch and unpack sprd libraries
+      run: |
+        cd tools
+        git clone https://gitlab.com/Rissu-Projekt/additional.git lib64
+        cd lib64
+        tar -xvf part01.tar.xz && rm part01.tar.xz
+        tar -xvf part02.tar.xz && rm part02.tar.xz
+        tar -xvf part03.tar.xz && rm part03.tar.xz
+        tar -xvf part04.tar.xz && rm part04.tar.xz
+        tar -xvf part05.tar.xz && rm part05.tar.xz
+        tar -xvf part06.tar.xz && rm part06.tar.xz
+        tar -xvf part07.tar.xz && rm part07.tar.xz
+      working-directory: android_kernel_samsung_a03
+    - name: Build kernel
+      id: buildKernel
+      run: |
+        export GIT_LOCALVERSION=$PRE_INPUT_LOCALVERSION
+        export GIT_KSU_BRANCH=dev
+        export GIT_KSU_STATE=true
+
+        export GIT_REPO=$PRE_GITHUB_REPOSITORY
+        export GIT_SHA=$PRE_GITHUB_SHA
+        export GIT_SERVER_URL=$PRE_GITHUB_URL
+        
+        export TG_BOT_TOKEN=$PRE_BOT_TOKEN
+        export TG_CHAT_ID=$PRE_CHAT_ID
+        export TG_UPLOAD=$PRE_INPUT_UPLOAD_TO_TG
+        bash $(pwd)/build_kernel.sh
+        imgName=`cat $(pwd)/tmp_gitout_name.txt` && echo "imgName=$imgName" >> $GITHUB_OUTPUT
+      working-directory: android_kernel_samsung_a03
+      env:
+        PRE_INPUT_LOCALVERSION: ${{ github.event.inputs.INPUT_LOCALVERSION }}
+        PRE_INPUT_KSU_BRANCH: ${{ github.event.inputs.INPUT_KSU_BRANCH }}
+        PRE_INPUT_KSU_STATE: ${{ github.event.inputs.INPUT_KSU_STATE }}
+        PRE_INPUT_UPLOAD_TO_TG: ${{ github.event.inputs.INPUT_UPLOAD_TO_TG }}
+        PRE_INPUT_KERNEL_CI_TYPE: ${{ github.event.inputs.INPUT_KERNEL_CI_TYPE }}
+        PRE_INPUT_KERNEL_REV: ${{ github.event.inputs.INPUT_KERNEL_REVISION }}
+        PRE_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        PRE_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        PRE_GITHUB_REPOSITORY: ${{ github.repository }}
+        PRE_GITHUB_SHA: ${{ github.sha }}
+        PRE_GITHUB_URL: ${{ github.url }}
+        
+    - name: Upload .img
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.buildKernel.outputs.imgName }}
+        path: android_kernel_samsung_a03/Rissu/*.img
+
+  noksu:
     runs-on: ubuntu-latest
     environment: TG
     steps:
